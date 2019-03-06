@@ -80,25 +80,23 @@ class VideoList extends StatefulWidget {
 }
 
 class _VideoListState extends State<VideoList> {
-  static final apiKey = Platform.environment['YOUTUBE_API_KEY'];
   @override
   void initState() {
     super.initState();
   }
 
   void search(String text) {
+    // TODO search
   }
 
   @override
   Widget build(BuildContext context) {
-    String title = apiKey;
-    if (title == null) title = 'VideoList';
     return Scaffold(
       appBar: new AppBar(
-        title: const Text('YouTube Player'),
+        title: Text(Strings.of(context).title),
       ),
       body: new Center(
-        child: Text(title),
+        child: Text(Strings.of(context).apiKey),
       ),
     );
   }
