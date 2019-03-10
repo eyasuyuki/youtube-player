@@ -1,11 +1,11 @@
 {
   "@@last_modified": "2019-03-06T21:06:37.872460",
-  "title": "YouTube player",
+  "title": "messages: YouTube player",
   "@title": {
     "type": "text",
     "placeholders": {}
   },
-  "apiKey": "<YouTube API Key>",
+  "apiKey": "messages: <YouTube API Key>",
   "@apiKey": {
     "type": "text",
     "placeholders": {}
