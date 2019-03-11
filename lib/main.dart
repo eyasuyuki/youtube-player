@@ -56,7 +56,8 @@ class VideoList extends StatefulWidget {
 }
 
 class _VideoListState extends State<VideoList> {
-  static const key = 'search_word';
+  static const searchWordKey = 'search_word';
+  static const searchDataKey = 'search_data';
   static String word;
   @override
   void initState() {
@@ -66,13 +67,18 @@ class _VideoListState extends State<VideoList> {
 
   void _init() async {
     var sp = await SharedPreferences.getInstance();
-    word = sp.get(key);
+    word = sp.get(searchWordKey);
   }
 
   Future<Map<String, dynamic>> _search(String word) async {
+    var sp = await SharedPreferences.getInstance();
+    var data = sp.get(searchDataKey);
+    if (data != null) return json.decode(data);
+
     var api = YouTubeApi();
     var result = await http.get(api.searcUri(word, Strings.of(context).apiKey));
     if (result == null) return null;
+    await sp.setString(searchDataKey, result.body.toString());
     return json.decode(result.body);
   }
 
