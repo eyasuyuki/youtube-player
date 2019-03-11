@@ -78,7 +78,9 @@ class _VideoListState extends State<VideoList> {
     var api = YouTubeApi();
     var result = await http.get(api.searcUri(word, Strings.of(context).apiKey));
     if (result == null) return null;
-    await sp.setString(searchDataKey, result.body.toString());
+    if (result.statusCode == 200) {
+      await sp.setString(searchDataKey, result.body.toString());
+    }
     return json.decode(result.body);
   }
 
