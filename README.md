@@ -26,8 +26,7 @@ flutter pub pub run intl_translation:generate_from_arb --output-dir=lib/l10n --n
 
 ## ToDo
 
-- Save search result to Shared Preferences
 - Add search button
- - Implement search button action
+- Implement search button action
 - Implement player screen
 
