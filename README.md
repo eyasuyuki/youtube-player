@@ -23,3 +23,9 @@ flutter pub pub run intl_translation:extract_to_arb --output-dir=lib/l10n lib/l1
 ```
 flutter pub pub run intl_translation:generate_from_arb --output-dir=lib/l10n --no-use-deferred-loading lib/l10n/app_localizations.dart lib/l10n/intl_*.arb
 ```
+
+## ToDo
+
+- Save search result to Shared Preferences
+- Add search button
+-- Implement search button action
