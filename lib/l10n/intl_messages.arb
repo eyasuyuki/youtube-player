@@ -1,12 +1,7 @@
 {
-  "@@last_modified": "2019-03-06T21:06:37.872460",
-  "title": "messages: YouTube player",
+  "@@last_modified": "2019-03-11T13:32:49.645636",
+  "title": "strings: Title",
   "@title": {
-    "type": "text",
-    "placeholders": {}
-  },
-  "apiKey": "messages: <YouTube API Key>",
-  "@apiKey": {
     "type": "text",
     "placeholders": {}
   }
