@@ -78,14 +78,14 @@ class _VideoListState extends State<VideoList> {
 
   List<Widget> _getListItems(Map<String, dynamic> data) {
     if (data == null) return [];
-    return data['items']
+    return new List<Widget>.from(data['items']
         .map((item) => ListTile(
               leading: Image.network(
                   item['snippet']['thumbnails']['default']['url']),
               title: Text(item['snippet']['title']),
-              subtitle: Text(item['snippet']['declarations']),
+              subtitle: Text(item['snippet']['description']),
             ))
-        .toList();
+        .toList());
   }
 
   @override
