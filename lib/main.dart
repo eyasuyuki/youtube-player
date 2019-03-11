@@ -1,4 +1,4 @@
-import 'dart:io' show Platform;
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -56,6 +56,7 @@ class VideoList extends StatefulWidget {
 }
 
 class _VideoListState extends State<VideoList> {
+  static const key = 'search_word';
   static String word;
   @override
   void initState() {
@@ -63,15 +64,28 @@ class _VideoListState extends State<VideoList> {
     _init();
   }
 
-  void _init() async {}
+  void _init() async {
+    var sp = await SharedPreferences.getInstance();
+    word = sp.get(key);
+  }
 
   Future<Map<String, dynamic>> _search(String word) async {
-    // TODO search
-    return null; //TODO
+    var api = YouTubeApi();
+    var result = await http.get(api.searcUri(word, Strings.of(context).apiKey));
+    if (result == null) return null;
+    return json.decode(result.body);
   }
 
   List<Widget> _getListItems(Map<String, dynamic> data) {
-    return []; //TODO
+    if (data == null) return [];
+    return data['items']
+        .map((item) => ListTile(
+              leading: Image.network(
+                  item['snippet']['thumbnails']['default']['url']),
+              title: item['snippet']['title'],
+              subtitle: item['snippet']['declarations'],
+            ))
+        .toList();
   }
 
   @override
@@ -88,6 +102,10 @@ class _VideoListState extends State<VideoList> {
               child: CircularProgressIndicator(
                 valueColor: new AlwaysStoppedAnimation<Color>(Colors.blue),
               ),
+            );
+          } else if (snapshot.data['error'] != null) {
+            return Center(
+              child: Text(json.encode(snapshot.data)),
             );
           } else {
             return ListView(children: _getListItems(snapshot.data));
