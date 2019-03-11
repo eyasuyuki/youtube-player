@@ -82,8 +82,8 @@ class _VideoListState extends State<VideoList> {
         .map((item) => ListTile(
               leading: Image.network(
                   item['snippet']['thumbnails']['default']['url']),
-              title: item['snippet']['title'],
-              subtitle: item['snippet']['declarations'],
+              title: Text(item['snippet']['title']),
+              subtitle: Text(item['snippet']['declarations']),
             ))
         .toList();
   }
