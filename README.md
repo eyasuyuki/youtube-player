@@ -2,7 +2,7 @@
 
 Flutter YouTube player example
 
-![YouTube player screen shot](https://raw.githubusercontent.com/eyasuyuki/youtube-player/images/youtube_player.png | width=788)
+<img src="https://raw.githubusercontent.com/eyasuyuki/youtube-player/images/youtube_player.png" width="788" height="1400">
 
 ## Getting Started
 
@@ -13,7 +13,7 @@ Flutter YouTube player example
 ## Localization
 
 ### Re-generate .arb from .dart
-
+ 
 Use these commant at project root.
 
 ```
