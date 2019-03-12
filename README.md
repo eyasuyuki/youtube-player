@@ -2,6 +2,8 @@
 
 Flutter YouTube player example
 
+![YouTube player screen shot](https://raw.githubusercontent.com/eyasuyuki/youtube-player/images/youtube_player.png)
+
 ## Getting Started
 
 - Create project at Google Developer Console. ( https://console.developers.google.com )
@@ -26,7 +28,5 @@ flutter pub pub run intl_translation:generate_from_arb --output-dir=lib/l10n --n
 
 ## ToDo
 
-- Add search button
-- Implement search button action
 - Implement player screen
 
