@@ -2,7 +2,7 @@
 
 Flutter YouTube player example
 
-<img src="https://raw.githubusercontent.com/eyasuyuki/youtube-player/images/youtube_player.png" width="788px">
+![YouTube player screen shot](https://raw.githubusercontent.com/eyasuyuki/youtube-player/images/youtube_player.png | width=788)
 
 ## Getting Started
 
