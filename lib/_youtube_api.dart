@@ -12,7 +12,7 @@ class YouTubeApi {
       'maxResults': '10',
       'key': key,
     };
-    if (word != null) result['q'] = word;
+    if (word != null && word.length > 0) result['q'] = word;
     return result;
   }
 }

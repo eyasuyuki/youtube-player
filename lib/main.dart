@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:material_search/material_search.dart';
 
 import 'l10n/app_localizations.dart';
 
@@ -56,18 +57,23 @@ class VideoList extends StatefulWidget {
 }
 
 class _VideoListState extends State<VideoList> {
-  static const searchWordKey = 'search_word';
+  static const searchWordsKey = 'search_words';
   static const searchDataKey = 'search_data';
-  static String word;
+  static List<String> words = new List<String>();
   @override
   void initState() {
     super.initState();
-    _init();
+    _getPreviouseWords();
   }
 
-  void _init() async {
+  void _getPreviouseWords() async {
     var sp = await SharedPreferences.getInstance();
-    word = sp.get(searchWordKey);
+    words = sp.getStringList(searchWordsKey);
+  }
+
+  void _setPreviousWords() async {
+    var sp = await SharedPreferences.getInstance();
+    sp.setStringList(searchWordsKey, words);
   }
 
   Future<Map<String, dynamic>> _search(String word) async {
@@ -77,6 +83,7 @@ class _VideoListState extends State<VideoList> {
 
     var api = YouTubeApi();
     var result = await http.get(api.searcUri(word, Strings.of(context).apiKey));
+    print(result.request.toString()); //TODO debug
     if (result == null) return null;
     if (result.statusCode == 200) {
       await sp.setString(searchDataKey, result.body.toString());
@@ -96,14 +103,65 @@ class _VideoListState extends State<VideoList> {
         .toList());
   }
 
+  _buildMaterialSearchPage(BuildContext context) {
+    return new MaterialPageRoute<String>(
+      settings: new RouteSettings(
+        name: 'material_search',
+        isInitialRoute: false,
+      ),
+      builder: (BuildContext context) {
+        return new Material(
+          child: new MaterialSearch<String>(
+            placeholder: 'Search', // TODO localize
+            results: words == null
+                ? <MaterialSearchResult<String>>[]
+                : words
+                    .map((String v) => new MaterialSearchResult<String>(
+                          value: v,
+                          text: v,
+                        ))
+                    .toList(),
+            filter: (dynamic value, String criteria) {
+              return value.contains(new RegExp(r'' + criteria.trim()));
+            },
+            onSelect: (dynamic value) => Navigator.of(context).pop(value),
+            onSubmit: (dynamic value) => Navigator.of(context).pop(value),
+          ),
+        );
+      },
+    );
+  }
+
+  _showMaterialSearch(BuildContext context) {
+    Navigator.of(context)
+        .push(_buildMaterialSearchPage(context))
+        .then((dynamic value) {
+      setState(() {
+        if (words != null && !words.contains(value)) {
+          words.insert(0, value as String);
+          _setPreviousWords();
+        }
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: new AppBar(
         title: Text(Strings.of(context).title),
+        actions: <Widget>[
+          new IconButton(
+            onPressed: () {
+              _showMaterialSearch(context);
+            },
+            tooltip: 'Search', // TODO localization
+            icon: new Icon(Icons.search),
+          ),
+        ],
       ),
       body: FutureBuilder(
-        future: _search(word),
+        future: _search((words == null || words.isEmpty) ? null : words[0]),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (!snapshot.hasData) {
             return Center(
