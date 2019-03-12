@@ -35,6 +35,8 @@ dependencies:
 
   shared_preferences:
 
+  material_search:
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
