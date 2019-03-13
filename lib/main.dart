@@ -85,11 +85,14 @@ class _VideoListState extends State<VideoList> {
   }
 
   void _search(word) async {
+    print('_search: word=' + word); //TODO debug
     var sp = await SharedPreferences.getInstance();
     var api = YouTubeApi();
     var result = await http.get(api.searcUri(word, Strings.of(context).apiKey));
     print(result.request.toString()); //TODO debug
     if (result == null) return null;
+    print('_search: result.statusCode=' +
+        result.statusCode.toString()); //TODO debug
     if (result.statusCode == 200) {
       await sp.setString(searchDataKey, result.body.toString());
     }
