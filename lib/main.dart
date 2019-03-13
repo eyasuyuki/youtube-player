@@ -77,15 +77,15 @@ class _VideoListState extends State<VideoList> {
     sp.setStringList(searchWordsKey, words);
   }
 
-  Future<Map<String, dynamic>> _search() async {
+  Future<Map<String, dynamic>> _getPreviouseData() async {
     var sp = await SharedPreferences.getInstance();
     var data = sp.get(searchDataKey);
-    if (data != null) {
-      return json.decode(data);
-    }
+    if (data == null) return new Map<String, dynamic>();
+    return json.decode(data);
+  }
 
-    var words = sp.getStringList(searchWordsKey);
-    var word = words == null || words.length <= 0 ? null : words[0];
+  void _search(word) async {
+    var sp = await SharedPreferences.getInstance();
     var api = YouTubeApi();
     var result = await http.get(api.searcUri(word, Strings.of(context).apiKey));
     print(result.request.toString()); //TODO debug
@@ -93,7 +93,6 @@ class _VideoListState extends State<VideoList> {
     if (result.statusCode == 200) {
       await sp.setString(searchDataKey, result.body.toString());
     }
-    return json.decode(result.body);
   }
 
   List<Widget> _getListItems(Map<String, dynamic> data) {
@@ -140,9 +139,12 @@ class _VideoListState extends State<VideoList> {
         .push(_buildMaterialSearchPage(context, words))
         .then((dynamic value) {
       setState(() {
-        if (value != null && !words.contains(value)) {
-          words.insert(0, value as String);
-          _setPreviousWords(words);
+        if (value != null) {
+          _search(value);
+          if (!words.contains(value)) {
+            words.insert(0, value as String);
+            _setPreviousWords(words);
+          }
         }
       });
     });
@@ -169,7 +171,7 @@ class _VideoListState extends State<VideoList> {
         ],
       ),
       body: FutureBuilder(
-        future: _search(),
+        future: _getPreviouseData(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (!snapshot.hasData) {
             return Center(
