@@ -8,7 +8,7 @@ class YouTubeApi {
 
   Map<String, String> getOptions(String word, String key) {
     Map<String, String> result = new Map<String, String>();
-    if (word != null && word.length > 0) result['q'] = word;
+    if (word != null && !word.isEmpty) result['q'] = word;
     result['part'] = 'snippet';
     result['maxResults'] = '10';
     result['key'] = key;
