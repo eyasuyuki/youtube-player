@@ -83,7 +83,10 @@ class _VideoListState extends State<VideoList> {
 
   Future<Map<String, dynamic>> _getPreviousData() async {
     var sp = await SharedPreferences.getInstance();
-    var data = sp.get(searchDataKey);
+    var data = sp.getString(searchDataKey);
+    print('_getPreviouseData: data=' + data == null
+        ? 'null'
+        : data.substring(0, 10)); //TODO debug
     if (data == null) {
       return null;
     } else {
