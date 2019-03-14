@@ -1,7 +1,12 @@
 {
-  "@@last_modified": "2019-03-11T13:32:49.645636",
-  "title": "strings: Title",
+  "@@last_modified": "2019-03-14T17:37:56.748866",
+  "title": "Title",
   "@title": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "search": "Search",
+  "@search": {
     "type": "text",
     "placeholders": {}
   }

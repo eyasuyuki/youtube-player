@@ -20,6 +20,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => <String, Function> {
+    "search" : MessageLookupByLibrary.simpleMessage("Search"),
     "title" : MessageLookupByLibrary.simpleMessage("YouTube player")
   };
 }

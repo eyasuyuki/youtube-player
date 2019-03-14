@@ -22,5 +22,6 @@ class Strings {
 
   String get apiKey => '<YouTube API Key>'; // do not localize
 
-  String get title => Intl.message('strings: Title', name: "title");
+  String get title => Intl.message('Title', name: "title");
+  String get search => Intl.message('Search', name: 'search');
 }
