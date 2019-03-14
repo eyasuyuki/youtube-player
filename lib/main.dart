@@ -59,12 +59,13 @@ class VideoList extends StatefulWidget {
 class _VideoListState extends State<VideoList> {
   static const searchWordsKey = 'search_words';
   static const searchDataKey = 'search_data';
+  static String word = null;
   @override
   void initState() {
     super.initState();
   }
 
-  Future<List<String>> _getPreviouseWords() async {
+  Future<List<String>> _getPreviousWords() async {
     var sp = await SharedPreferences.getInstance();
     List<String> result = sp.getStringList(searchWordsKey);
     print('_getPreviouseWords: result=' + result.toString()); //TODO debug
@@ -72,21 +73,33 @@ class _VideoListState extends State<VideoList> {
     return result;
   }
 
-  void _setPreviousWords(List<String> words) async {
+  void _setPreviousWords(String value, List<String> words) async {
     var sp = await SharedPreferences.getInstance();
-    sp.setStringList(searchWordsKey, words);
+    if (value != null && !words.contains(value)) {
+      words.insert(0, value);
+      sp.setStringList(searchWordsKey, words);
+    }
   }
 
-  Future<Map<String, dynamic>> _getPreviouseData() async {
+  Future<Map<String, dynamic>> _getPreviousData() async {
     var sp = await SharedPreferences.getInstance();
     var data = sp.get(searchDataKey);
-    if (data == null) return new Map<String, dynamic>();
-    return json.decode(data);
+    if (data == null) {
+      return null;
+    } else {
+      return json.decode(data);
+    }
   }
 
-  void _search(word) async {
-    print('_search: word=' + word); //TODO debug
-    var sp = await SharedPreferences.getInstance();
+  Future<Map<String, dynamic>> _search(String word) async {
+    if (word == null) {
+      // get previouse data
+      var result = await _getPreviousData();
+      if (result != null) {
+        return result;
+      }
+    }
+
     var api = YouTubeApi();
     var result = await http.get(api.searcUri(word, Strings.of(context).apiKey));
     print(result.request.toString()); //TODO debug
@@ -94,8 +107,10 @@ class _VideoListState extends State<VideoList> {
     print('_search: result.statusCode=' +
         result.statusCode.toString()); //TODO debug
     if (result.statusCode == 200) {
+      var sp = await SharedPreferences.getInstance();
       await sp.setString(searchDataKey, result.body.toString());
     }
+    return json.decode(result.body);
   }
 
   List<Widget> _getListItems(Map<String, dynamic> data) {
@@ -141,14 +156,9 @@ class _VideoListState extends State<VideoList> {
     Navigator.of(context)
         .push(_buildMaterialSearchPage(context, words))
         .then((dynamic value) {
+      _setPreviousWords(value, words);
       setState(() {
-        if (value != null) {
-          _search(value);
-          if (!words.contains(value)) {
-            words.insert(0, value as String);
-            _setPreviousWords(words);
-          }
-        }
+        word = value;
       });
     });
   }
@@ -160,7 +170,7 @@ class _VideoListState extends State<VideoList> {
         title: Text(Strings.of(context).title),
         actions: <Widget>[
           new FutureBuilder(
-            future: _getPreviouseWords(),
+            future: _getPreviousWords(),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               return new IconButton(
                 onPressed: () {
@@ -174,7 +184,7 @@ class _VideoListState extends State<VideoList> {
         ],
       ),
       body: FutureBuilder(
-        future: _getPreviouseData(),
+        future: _search(word),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (!snapshot.hasData) {
             return Center(
