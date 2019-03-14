@@ -29,4 +29,6 @@ flutter pub pub run intl_translation:generate_from_arb --output-dir=lib/l10n --n
 ## ToDo
 
 - Implement player screen
+- Scroll to fetch next page
+- Cache control with etag
 
