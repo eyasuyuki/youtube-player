@@ -124,6 +124,10 @@ class _VideoListState extends State<VideoList> {
                   item['snippet']['thumbnails']['default']['url']),
               title: Text(item['snippet']['title']),
               subtitle: Text(item['snippet']['description']),
+              onTap: () {
+                final videoId = item['id']['videoId'];
+                print('_getListItem: ListTile: videoId=' + videoId);
+              },
             ))
         .toList());
   }
