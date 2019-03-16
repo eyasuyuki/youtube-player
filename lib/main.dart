@@ -76,7 +76,7 @@ class _VideoListState extends State<VideoList> {
   void _setPreviousWords(String value) async {
     var sp = await SharedPreferences.getInstance();
     var words = sp.getStringList(searchWordsKey);
-    if (value != null && !words.contains(value)) {
+    if (value != null && words != null && !words.contains(value)) {
       words.insert(0, value);
       sp.setStringList(searchWordsKey, words);
     }
@@ -139,7 +139,8 @@ class _VideoListState extends State<VideoList> {
       builder: (BuildContext context) {
         return new FutureBuilder(
           future: _getPreviousWords(),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
+          builder:
+              (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
             return new Material(
               child: new MaterialSearch<String>(
                 placeholder: 'Search', // TODO localize
@@ -190,7 +191,8 @@ class _VideoListState extends State<VideoList> {
       ),
       body: FutureBuilder(
         future: _search(word),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
+        builder: (BuildContext context,
+            AsyncSnapshot<Map<String, dynamic>> snapshot) {
           if (!snapshot.hasData) {
             return Center(
               child: CircularProgressIndicator(
