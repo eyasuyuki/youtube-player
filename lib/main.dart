@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:material_search/material_search.dart';
+import 'package:youtube_player/youtube_player.dart';
 
 import 'l10n/app_localizations.dart';
 
@@ -244,16 +245,33 @@ class _VideoListState extends State<VideoList> {
 
 class VideoPlayer extends StatelessWidget {
   final videoId;
+  VideoPlayerController _controller;
+
   VideoPlayer({this.videoId});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: new Center(
-        child: new GestureDetector(
-          onTap: () {
-            Navigator.of(context).pop();
-          },
-          child: Text('videoId=' + videoId),
+      body: new SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            YoutubePlayer(
+              context: context,
+              source: videoId,
+              quality: YoutubeQuality.HD,
+              aspectRatio: 16 / 9,
+              autoPlay: true,
+              controlsActiveBackgroundOverlay: true,
+              controlsTimeOut: Duration(seconds: 4),
+              playerMode: YoutubePlayerMode.DEFAULT,
+              callbackController: (controller) {
+                _controller = controller;
+              },
+              onError: (error) {
+                print(error);
+              },
+            ),
+          ],
         ),
       ),
     );
