@@ -73,8 +73,9 @@ class _VideoListState extends State<VideoList> {
     return result;
   }
 
-  void _setPreviousWords(String value, List<String> words) async {
+  void _setPreviousWords(String value) async {
     var sp = await SharedPreferences.getInstance();
+    var words = sp.getStringList(searchWordsKey);
     if (value != null && !words.contains(value)) {
       words.insert(0, value);
       sp.setStringList(searchWordsKey, words);
@@ -84,9 +85,6 @@ class _VideoListState extends State<VideoList> {
   Future<Map<String, dynamic>> _getPreviousData() async {
     var sp = await SharedPreferences.getInstance();
     var data = sp.getString(searchDataKey);
-    print('_getPreviouseData: data=' + data == null
-        ? 'null'
-        : data.substring(0, 10)); //TODO debug
     if (data == null) {
       return null;
     } else {
@@ -105,7 +103,7 @@ class _VideoListState extends State<VideoList> {
 
     var api = YouTubeApi();
     var result = await http.get(api.searcUri(word, Strings.of(context).apiKey));
-    print(result.request.toString()); //TODO debug
+    print('_search: request=' + result.request.toString()); //TODO debug
     if (result == null) return null;
     print('_search: result.statusCode=' +
         result.statusCode.toString()); //TODO debug
@@ -132,38 +130,43 @@ class _VideoListState extends State<VideoList> {
         .toList());
   }
 
-  _buildMaterialSearchPage(BuildContext context, List<String> words) {
+  _buildMaterialSearchPage(BuildContext context) {
     return new MaterialPageRoute<String>(
       settings: new RouteSettings(
         name: 'material_search',
         isInitialRoute: false,
       ),
       builder: (BuildContext context) {
-        return new Material(
-          child: new MaterialSearch<String>(
-            placeholder: 'Search', // TODO localize
-            results: words
-                .map((String v) => new MaterialSearchResult<String>(
-                      value: v,
-                      text: v,
-                    ))
-                .toList(),
-            filter: (dynamic value, String criteria) {
-              return value.contains(new RegExp(r'' + criteria.trim()));
-            },
-            onSelect: (dynamic value) => Navigator.of(context).pop(value),
-            onSubmit: (dynamic value) => Navigator.of(context).pop(value),
-          ),
+        return new FutureBuilder(
+          future: _getPreviousWords(),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            return new Material(
+              child: new MaterialSearch<String>(
+                placeholder: 'Search', // TODO localize
+                results: snapshot.data
+                    .map((String v) => new MaterialSearchResult<String>(
+                          value: v,
+                          text: v,
+                        ))
+                    .toList(),
+                filter: (dynamic value, String criteria) {
+                  return value.contains(new RegExp(r'' + criteria.trim()));
+                },
+                onSelect: (dynamic value) => Navigator.of(context).pop(value),
+                onSubmit: (dynamic value) => Navigator.of(context).pop(value),
+              ),
+            );
+          },
         );
       },
     );
   }
 
-  _showMaterialSearch(BuildContext context, List<String> words) {
+  _showMaterialSearch(BuildContext context) {
     Navigator.of(context)
-        .push(_buildMaterialSearchPage(context, words))
+        .push(_buildMaterialSearchPage(context))
         .then((dynamic value) {
-      _setPreviousWords(value, words);
+      _setPreviousWords(value);
       setState(() {
         word = value;
       });
@@ -176,17 +179,12 @@ class _VideoListState extends State<VideoList> {
       appBar: new AppBar(
         title: Text(Strings.of(context).title),
         actions: <Widget>[
-          new FutureBuilder(
-            future: _getPreviousWords(),
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              return new IconButton(
-                onPressed: () {
-                  _showMaterialSearch(context, snapshot.data);
-                },
-                tooltip: 'Search', // TODO localization
-                icon: new Icon(Icons.search),
-              );
+          new IconButton(
+            onPressed: () {
+              _showMaterialSearch(context);
             },
+            tooltip: 'Search', // TODO localization
+            icon: new Icon(Icons.search),
           ),
         ],
       ),
