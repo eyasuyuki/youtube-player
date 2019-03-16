@@ -76,7 +76,8 @@ class _VideoListState extends State<VideoList> {
   void _setPreviousWords(String value) async {
     var sp = await SharedPreferences.getInstance();
     var words = sp.getStringList(searchWordsKey);
-    if (value != null && words != null && !words.contains(value)) {
+    if (words == null) words = new List<String>();
+    if (value != null && !words.contains(value)) {
       words.insert(0, value);
       sp.setStringList(searchWordsKey, words);
     }
@@ -130,6 +131,17 @@ class _VideoListState extends State<VideoList> {
         .toList());
   }
 
+  List<MaterialSearchResult<String>> _buildMaterialSearchResult(
+      List<String> data) {
+    if (data == null) return new List<MaterialSearchResult<String>>();
+    return data
+        .map((String v) => new MaterialSearchResult<String>(
+              value: v,
+              text: v,
+            ))
+        .toList();
+  }
+
   _buildMaterialSearchPage(BuildContext context) {
     return new MaterialPageRoute<String>(
       settings: new RouteSettings(
@@ -144,12 +156,7 @@ class _VideoListState extends State<VideoList> {
             return new Material(
               child: new MaterialSearch<String>(
                 placeholder: 'Search', // TODO localize
-                results: snapshot.data
-                    .map((String v) => new MaterialSearchResult<String>(
-                          value: v,
-                          text: v,
-                        ))
-                    .toList(),
+                results: _buildMaterialSearchResult(snapshot.data),
                 filter: (dynamic value, String criteria) {
                   return value.contains(new RegExp(r'' + criteria.trim()));
                 },
