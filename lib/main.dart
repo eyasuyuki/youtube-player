@@ -14,6 +14,26 @@ void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
+
+  Route _getRoute(RouteSettings settings) {
+    Map<String, String> arg = settings.arguments;
+    String videoId;
+    if (arg != null) {
+      videoId = arg['videoId'];
+    }
+    switch (settings.name) {
+      case '/player':
+        return new MaterialPageRoute(builder: (BuildContext context) {
+          return new VideoPlayer(videoId: videoId);
+        });
+      case '/':
+      default:
+        return new MaterialPageRoute(builder: (BuildContext context) {
+          return new VideoList();
+        });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -21,10 +41,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      routes: <String, WidgetBuilder>{
-        '/': (BuildContext context) => new VideoList(),
-        '/player': (BuildContext context) => new VideoPlayer(),
-      },
+      onGenerateRoute: _getRoute,
       localizationsDelegates: [
         const _MyLocalizationsDelegate(),
         GlobalMaterialLocalizations.delegate,
@@ -126,6 +143,12 @@ class _VideoListState extends State<VideoList> {
               onTap: () {
                 final videoId = item['id']['videoId'];
                 print('_getListItem: ListTile: videoId=' + videoId);
+                Navigator.of(context).pushNamed(
+                  '/player',
+                  arguments: <String, String>{
+                    'videoId': videoId,
+                  },
+                );
               },
             ))
         .toList());
@@ -220,11 +243,18 @@ class _VideoListState extends State<VideoList> {
 }
 
 class VideoPlayer extends StatelessWidget {
+  final videoId;
+  VideoPlayer({this.videoId});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: new Center(
-        child: const Text('VideoPlayer'),
+        child: new GestureDetector(
+          onTap: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('videoId=' + videoId),
+        ),
       ),
     );
   }
