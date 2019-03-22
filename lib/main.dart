@@ -5,7 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:material_search/material_search.dart';
-import 'package:youtube_player/youtube_player.dart';
+import 'package:flutter_youtube_view/flutter_youtube_view.dart';
 
 import 'l10n/app_localizations.dart';
 
@@ -243,36 +243,75 @@ class _VideoListState extends State<VideoList> {
   }
 }
 
-class VideoPlayer extends StatelessWidget {
+class VideoPlayer extends StatefulWidget {
   final videoId;
-  VideoPlayerController _controller;
-
   VideoPlayer({this.videoId});
+
+  @override
+  _VideoPlayerState createState() => new _VideoPlayerState(videoId: videoId);
+}
+
+class _VideoPlayerState extends State<VideoPlayer>
+    implements YouTubePlayerListener {
+  final videoId;
+  String _playerState = "";
+  double _currentVideoSecond = 0.0;
+
+  _VideoPlayerState({this.videoId});
+
+  FlutterYoutubeViewController _controller;
+
+  void _onYoutubeCreated(FlutterYoutubeViewController controller) {
+    this._controller = controller;
+  }
+
+  @override
+  void onReady() {
+    print('_VideoPlayerState: onReady'); //TODO debug
+  }
+
+  @override
+  void onStateChange(String state) {
+    print('_VideoPlayerState: onStateChange: state=$state'); //TODO debug
+    setState(() {
+      _playerState = state;
+    });
+  }
+
+  @override
+  void onError(String error) {
+    print('_VideoPlayerState: onError: error=$error'); //TODO debug
+  }
+
+  @override
+  void onVideoDuration(double duration) {
+    print(
+        '_VideoPlayerState: onVideoDuration: duration=$duration'); //TODO debug
+  }
+
+  @override
+  void onCurrentSecond(double second) {
+    print('_VideoPlayerState: onCurrentSecond: second=$second'); //TODO debug
+    _currentVideoSecond = second;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: new SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            YoutubePlayer(
-              context: context,
-              source: videoId,
-              quality: YoutubeQuality.HD,
-              aspectRatio: 16 / 9,
-              autoPlay: true,
-              controlsActiveBackgroundOverlay: true,
-              controlsTimeOut: Duration(seconds: 4),
-              playerMode: YoutubePlayerMode.DEFAULT,
-              callbackController: (controller) {
-                _controller = controller;
-              },
-              onError: (error) {
-                print(error);
-              },
+      appBar: AppBar(
+        title: const Text('YouTube Player'), // TODO localize
+      ),
+      body: Stack(
+        children: <Widget>[
+          Container(
+            child: FlutterYoutubeView(
+              onViewCreated: _onYoutubeCreated,
+              listener: this,
+              params: YoutubeParam(
+                  videoId: videoId, showUI: false, startSeconds: 0.0),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
