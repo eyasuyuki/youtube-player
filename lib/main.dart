@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:material_search/material_search.dart';
+import 'package:flutter_youtube_view/flutter_youtube_view.dart';
 
 import 'l10n/app_localizations.dart';
 
@@ -14,6 +15,26 @@ void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
+
+  Route _getRoute(RouteSettings settings) {
+    Map<String, String> arg = settings.arguments;
+    String videoId;
+    if (arg != null) {
+      videoId = arg['videoId'];
+    }
+    switch (settings.name) {
+      case '/player':
+        return new MaterialPageRoute(builder: (BuildContext context) {
+          return new VideoPlayer(videoId: videoId);
+        });
+      case '/':
+      default:
+        return new MaterialPageRoute(builder: (BuildContext context) {
+          return new VideoList();
+        });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -21,10 +42,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      routes: <String, WidgetBuilder>{
-        '/': (BuildContext context) => new VideoList(),
-        '/player': (BuildContext context) => new VideoPlayer(),
-      },
+      onGenerateRoute: _getRoute,
       localizationsDelegates: [
         const _MyLocalizationsDelegate(),
         GlobalMaterialLocalizations.delegate,
@@ -73,8 +91,10 @@ class _VideoListState extends State<VideoList> {
     return result;
   }
 
-  void _setPreviousWords(String value, List<String> words) async {
+  void _setPreviousWords(String value) async {
     var sp = await SharedPreferences.getInstance();
+    var words = sp.getStringList(searchWordsKey);
+    if (words == null) words = new List<String>();
     if (value != null && !words.contains(value)) {
       words.insert(0, value);
       sp.setStringList(searchWordsKey, words);
@@ -84,9 +104,6 @@ class _VideoListState extends State<VideoList> {
   Future<Map<String, dynamic>> _getPreviousData() async {
     var sp = await SharedPreferences.getInstance();
     var data = sp.getString(searchDataKey);
-    print('_getPreviouseData: data=' + data == null
-        ? 'null'
-        : data.substring(0, 10)); //TODO debug
     if (data == null) {
       return null;
     } else {
@@ -105,7 +122,7 @@ class _VideoListState extends State<VideoList> {
 
     var api = YouTubeApi();
     var result = await http.get(api.searcUri(word, Strings.of(context).apiKey));
-    print(result.request.toString()); //TODO debug
+    print('_search: request=' + result.request.toString()); //TODO debug
     if (result == null) return null;
     print('_search: result.statusCode=' +
         result.statusCode.toString()); //TODO debug
@@ -127,43 +144,61 @@ class _VideoListState extends State<VideoList> {
               onTap: () {
                 final videoId = item['id']['videoId'];
                 print('_getListItem: ListTile: videoId=' + videoId);
+                Navigator.of(context).pushNamed(
+                  '/player',
+                  arguments: <String, String>{
+                    'videoId': videoId,
+                  },
+                );
               },
             ))
         .toList());
   }
 
-  _buildMaterialSearchPage(BuildContext context, List<String> words) {
+  List<MaterialSearchResult<String>> _buildMaterialSearchResult(
+      List<String> data) {
+    if (data == null) return new List<MaterialSearchResult<String>>();
+    return data
+        .map((String v) => new MaterialSearchResult<String>(
+              value: v,
+              text: v,
+            ))
+        .toList();
+  }
+
+  _buildMaterialSearchPage(BuildContext context) {
     return new MaterialPageRoute<String>(
       settings: new RouteSettings(
         name: 'material_search',
         isInitialRoute: false,
       ),
       builder: (BuildContext context) {
-        return new Material(
-          child: new MaterialSearch<String>(
-            placeholder: 'Search', // TODO localize
-            results: words
-                .map((String v) => new MaterialSearchResult<String>(
-                      value: v,
-                      text: v,
-                    ))
-                .toList(),
-            filter: (dynamic value, String criteria) {
-              return value.contains(new RegExp(r'' + criteria.trim()));
-            },
-            onSelect: (dynamic value) => Navigator.of(context).pop(value),
-            onSubmit: (dynamic value) => Navigator.of(context).pop(value),
-          ),
+        return new FutureBuilder(
+          future: _getPreviousWords(),
+          builder:
+              (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+            return new Material(
+              child: new MaterialSearch<String>(
+                placeholder: 'Search', // TODO localize
+                results: _buildMaterialSearchResult(snapshot.data),
+                filter: (dynamic value, String criteria) {
+                  return value.contains(new RegExp(r'' + criteria.trim()));
+                },
+                onSelect: (dynamic value) => Navigator.of(context).pop(value),
+                onSubmit: (dynamic value) => Navigator.of(context).pop(value),
+              ),
+            );
+          },
         );
       },
     );
   }
 
-  _showMaterialSearch(BuildContext context, List<String> words) {
+  _showMaterialSearch(BuildContext context) {
     Navigator.of(context)
-        .push(_buildMaterialSearchPage(context, words))
+        .push(_buildMaterialSearchPage(context))
         .then((dynamic value) {
-      _setPreviousWords(value, words);
+      _setPreviousWords(value);
       setState(() {
         word = value;
       });
@@ -176,23 +211,19 @@ class _VideoListState extends State<VideoList> {
       appBar: new AppBar(
         title: Text(Strings.of(context).title),
         actions: <Widget>[
-          new FutureBuilder(
-            future: _getPreviousWords(),
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              return new IconButton(
-                onPressed: () {
-                  _showMaterialSearch(context, snapshot.data);
-                },
-                tooltip: 'Search', // TODO localization
-                icon: new Icon(Icons.search),
-              );
+          new IconButton(
+            onPressed: () {
+              _showMaterialSearch(context);
             },
+            tooltip: 'Search', // TODO localization
+            icon: new Icon(Icons.search),
           ),
         ],
       ),
       body: FutureBuilder(
         future: _search(word),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
+        builder: (BuildContext context,
+            AsyncSnapshot<Map<String, dynamic>> snapshot) {
           if (!snapshot.hasData) {
             return Center(
               child: CircularProgressIndicator(
@@ -212,12 +243,75 @@ class _VideoListState extends State<VideoList> {
   }
 }
 
-class VideoPlayer extends StatelessWidget {
+class VideoPlayer extends StatefulWidget {
+  final videoId;
+  VideoPlayer({this.videoId});
+
+  @override
+  _VideoPlayerState createState() => new _VideoPlayerState(videoId: videoId);
+}
+
+class _VideoPlayerState extends State<VideoPlayer>
+    implements YouTubePlayerListener {
+  final videoId;
+  String _playerState = "";
+  double _currentVideoSecond = 0.0;
+
+  _VideoPlayerState({this.videoId});
+
+  FlutterYoutubeViewController _controller;
+
+  void _onYoutubeCreated(FlutterYoutubeViewController controller) {
+    this._controller = controller;
+  }
+
+  @override
+  void onReady() {
+    print('_VideoPlayerState: onReady'); //TODO debug
+  }
+
+  @override
+  void onStateChange(String state) {
+    print('_VideoPlayerState: onStateChange: state=$state'); //TODO debug
+    setState(() {
+      _playerState = state;
+    });
+  }
+
+  @override
+  void onError(String error) {
+    print('_VideoPlayerState: onError: error=$error'); //TODO debug
+  }
+
+  @override
+  void onVideoDuration(double duration) {
+    print(
+        '_VideoPlayerState: onVideoDuration: duration=$duration'); //TODO debug
+  }
+
+  @override
+  void onCurrentSecond(double second) {
+    print('_VideoPlayerState: onCurrentSecond: second=$second'); //TODO debug
+    _currentVideoSecond = second;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: new Center(
-        child: const Text('VideoPlayer'),
+      appBar: AppBar(
+        title: const Text('YouTube Player'), // TODO localize
+      ),
+      body: Stack(
+        children: <Widget>[
+          Container(
+            child: FlutterYoutubeView(
+              onViewCreated: _onYoutubeCreated,
+              listener: this,
+              params: YoutubeParam(
+                  videoId: videoId, showUI: false, startSeconds: 0.0),
+            ),
+          ),
+        ],
       ),
     );
   }
