@@ -308,7 +308,7 @@ class _VideoPlayerState extends State<VideoPlayer>
               onViewCreated: _onYoutubeCreated,
               listener: this,
               params: YoutubeParam(
-                  videoId: videoId, showUI: false, startSeconds: 0.0),
+                  videoId: videoId, showUI: true, startSeconds: 0.0),
             ),
           ),
         ],
