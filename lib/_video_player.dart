@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_youtube_view/flutter_youtube_view.dart';
 
+import 'l10n/app_localizations.dart';
+
 class VideoPlayer extends StatefulWidget {
   final videoId;
   VideoPlayer({this.videoId});
@@ -58,7 +60,7 @@ class _VideoPlayerState extends State<VideoPlayer>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('YouTube Player'), // TODO localize
+        title: Text(Strings.of(context).title),
       ),
       body: Stack(
         children: <Widget>[

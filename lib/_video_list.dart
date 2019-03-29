@@ -119,7 +119,7 @@ class _VideoListState extends State<VideoList> {
               (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
             return new Material(
               child: new MaterialSearch<String>(
-                placeholder: 'Search', // TODO localize
+                placeholder: Strings.of(context).search,
                 results: _buildMaterialSearchResult(snapshot.data),
                 filter: (dynamic value, String criteria) {
                   return value.contains(new RegExp(r'' + criteria.trim()));
@@ -155,7 +155,7 @@ class _VideoListState extends State<VideoList> {
             onPressed: () {
               _showMaterialSearch(context);
             },
-            tooltip: 'Search', // TODO localization
+            tooltip: Strings.of(context).search,
             icon: new Icon(Icons.search),
           ),
         ],
