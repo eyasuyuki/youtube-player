@@ -30,5 +30,4 @@ flutter pub pub run intl_translation:generate_from_arb --output-dir=lib/l10n --n
 
 - Scroll to fetch next page
 - Cache control with etag
-- Add video controller
 - Background playback
