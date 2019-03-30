@@ -8,6 +8,7 @@ import 'package:material_search/material_search.dart';
 import 'l10n/app_localizations.dart';
 
 import '_youtube_api.dart';
+import '_video_player.dart';
 
 class VideoList extends StatefulWidget {
   @override
@@ -75,6 +76,11 @@ class _VideoListState extends State<VideoList> {
 
   List<Widget> _getListItems(Map<String, dynamic> data) {
     if (data == null) return [];
+    var playList = PlayList();
+    playList.ids = data['items']
+        .map((item) => item['id']['videoId'])
+        .toList()
+        .cast<String>();
     return new List<Widget>.from(data['items']
         .map((item) => ListTile(
               leading: Image.network(
@@ -83,12 +89,11 @@ class _VideoListState extends State<VideoList> {
               subtitle: Text(item['snippet']['description']),
               onTap: () {
                 final videoId = item['id']['videoId'];
+                playList.index = playList.ids.indexOf(videoId);
                 print('_getListItem: ListTile: videoId=' + videoId);
                 Navigator.of(context).pushNamed(
                   '/player',
-                  arguments: <String, String>{
-                    'videoId': videoId,
-                  },
+                  arguments: playList,
                 );
               },
             ))

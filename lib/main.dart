@@ -1,15 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/widgets.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:material_search/material_search.dart';
-import 'package:flutter_youtube_view/flutter_youtube_view.dart';
 
 import 'l10n/app_localizations.dart';
 
-import '_youtube_api.dart';
 import '_video_list.dart';
 import '_video_player.dart';
 
@@ -19,15 +13,12 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
 
   Route _getRoute(RouteSettings settings) {
-    Map<String, String> arg = settings.arguments;
+    PlayList playList = settings.arguments;
     String videoId;
-    if (arg != null) {
-      videoId = arg['videoId'];
-    }
     switch (settings.name) {
       case '/player':
         return new MaterialPageRoute(builder: (BuildContext context) {
-          return new VideoPlayer(videoId: videoId);
+          return new VideoPlayer(playList: playList);
         });
       case '/':
       default:

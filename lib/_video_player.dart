@@ -4,21 +4,28 @@ import 'package:flutter_youtube_view/flutter_youtube_view.dart';
 
 import 'l10n/app_localizations.dart';
 
+class PlayList {
+  int index;
+  double duration;
+  List<String> ids;
+  PlayList({this.index, this.duration, this.ids});
+}
+
 class VideoPlayer extends StatefulWidget {
-  final videoId;
-  VideoPlayer({this.videoId});
+  final PlayList playList;
+  VideoPlayer({this.playList});
 
   @override
-  _VideoPlayerState createState() => new _VideoPlayerState(videoId: videoId);
+  _VideoPlayerState createState() => new _VideoPlayerState(playList: playList);
 }
 
 class _VideoPlayerState extends State<VideoPlayer>
     implements YouTubePlayerListener {
-  final videoId;
+  final PlayList playList;
   String _playerState = "";
   double _currentVideoSecond = 0.0;
 
-  _VideoPlayerState({this.videoId});
+  _VideoPlayerState({this.playList});
 
   FlutterYoutubeViewController _controller;
 
@@ -69,7 +76,9 @@ class _VideoPlayerState extends State<VideoPlayer>
               onViewCreated: _onYoutubeCreated,
               listener: this,
               params: YoutubeParam(
-                  videoId: videoId, showUI: true, startSeconds: 0.0),
+                  videoId: playList.ids[playList.index],
+                  showUI: true,
+                  startSeconds: 0.0),
             ),
           ),
         ],
